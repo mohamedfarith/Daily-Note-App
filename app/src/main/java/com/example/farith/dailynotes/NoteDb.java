@@ -72,4 +72,9 @@ public class NoteDb extends SQLiteOpenHelper {
             db.update(NoteClass.TABLE_NAME, values, NoteClass.ID + "="+position, null);
         }
     }
+    public void deleteRowInDb(SQLiteDatabase db,int adapterPosition){
+        Log.d(TAG, "deleteRowInDb: "+adapterPosition);
+        db = getWritableDatabase();
+        db.delete(NoteClass.TABLE_NAME,NoteClass.ID+"=?",new String[]{String.valueOf(adapterPosition+1)});
+    }
 }

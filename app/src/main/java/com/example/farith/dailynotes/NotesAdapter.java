@@ -1,7 +1,10 @@
 package com.example.farith.dailynotes;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -26,6 +29,9 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
    private Context mContext;
    private TextView txtnotesItem;
    private TextView txtCurrentTime;
+   NoteDb deleteRowInDb;
+   SQLiteDatabase deleteRowInDatabase;
+    LongPressActionListener longPressListener;
    private static final String TAG = NotesAdapter.class.getSimpleName();
     NotesAdapter(Context mContext, ArrayList<NotesDatabaseList> txt){
         this.mContext  = mContext;
@@ -73,7 +79,32 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
                 }
             });
 
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    createDialog();
+                    return true;
+                }
 
+                private void createDialog() {
+                    final AlertDialog.Builder deleteAlertDialog = new AlertDialog.Builder(mContext);
+                    deleteAlertDialog.setTitle("CONFIRM DELETE").setPositiveButton("DELETE", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            deleteRowInDb = new NoteDb(mContext);
+                            deleteRowInDb.deleteRowInDb(deleteRowInDatabase,getAdapterPosition());
+                            longPressListener = (LongPressActionListener) mContext;
+                            longPressListener.updateRecyclerView(getAdapterPosition());
+                        }
+                    });
+                    deleteAlertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });deleteAlertDialog.create().show();
+                }
+            });
         }
     }
 

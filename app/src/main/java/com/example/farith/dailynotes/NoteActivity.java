@@ -18,7 +18,6 @@ import java.util.Calendar;
 
 public class NoteActivity extends AppCompatActivity {
     EditText noteText;
-    NoteDb db;
     String notes;
     String adapterPosition;
     Button saveBtn;

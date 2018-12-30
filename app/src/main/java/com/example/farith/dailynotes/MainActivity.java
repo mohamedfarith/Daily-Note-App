@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener,LongPressActionListener{
     private static final String TAG = MainActivity.class.getSimpleName();
     private RecyclerView notesRecyclerView;
     private FloatingActionButton addButton;
@@ -165,5 +165,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String date = df.format(Calendar.getInstance().getTime());
         Log.d(TAG, "getCurrentTime: date " + date);
         return date;
+    }
+
+    @Override
+    public void updateRecyclerView(int position) {
+        notesDatabaseData.remove(position);
+        adapter.notifyItemRemoved(position);
+
+        if(notesDatabaseData.size()==0){
+            emptyText.setVisibility(View.VISIBLE);
+        }
     }
 }
