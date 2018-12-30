@@ -3,23 +3,23 @@ package com.example.farith.dailynotes;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.Animation;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.farith.dailynotes.ModelClass.NoteClass;
 import com.example.farith.dailynotes.ModelClass.NotesDatabaseList;
@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     NotesAdapter adapter;
     NotesDatabaseList databaseList = new NotesDatabaseList();
     TextView emptyText;
+    Boolean isGrid = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,24 +53,72 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.convert_to_grid, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        if (isGrid) {
+            menu.findItem(R.id.change_to_list).setVisible(true);
+            menu.findItem(R.id.change_to_grid).setVisible(false);
+        } else {
+            menu.findItem(R.id.change_to_list).setVisible(false);
+            menu.findItem(R.id.change_to_grid).setVisible(true);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+         super.onOptionsItemSelected(item);
+         if(item.getItemId()==R.id.change_to_list){
+             invalidateOptionsMenu();
+             isGrid = false;
+             adapter = new NotesAdapter(MainActivity.this, notesDatabaseData);
+             notesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+             notesRecyclerView.setAdapter(adapter);
+             if (notesDatabaseData.size() == 0) {
+                 emptyText.setVisibility(View.VISIBLE);
+             } else {
+                 adapter.notifyDataSetChanged();
+             }
+         }else{
+             isGrid  = true;
+             invalidateOptionsMenu();
+             adapter = new NotesAdapter(MainActivity.this, notesDatabaseData);
+             notesRecyclerView.setLayoutManager(new GridLayoutManager(this, 2, LinearLayoutManager.VERTICAL, false));
+             notesRecyclerView.setAdapter(adapter);
+             if (notesDatabaseData.size() == 0) {
+                 emptyText.setVisibility(View.VISIBLE);
+             } else {
+                 adapter.notifyDataSetChanged();
+             }
+         }
+         return true;
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
         dbReference = new NoteDb(MainActivity.this);
         notesDatabaseData = dbReference.readValues(database);
         adapter = new NotesAdapter(MainActivity.this, notesDatabaseData);
-        notesRecyclerView.setLayoutManager(new GridLayoutManager(this,2,LinearLayoutManager.VERTICAL,false));
+        notesRecyclerView.setLayoutManager(new GridLayoutManager(this, 2, LinearLayoutManager.VERTICAL, false));
         notesRecyclerView.setAdapter(adapter);
-        if(notesDatabaseData.size()==0){
+        if (notesDatabaseData.size() == 0) {
             emptyText.setVisibility(View.VISIBLE);
-        }else{
-       adapter.notifyDataSetChanged();
+        } else {
+            adapter.notifyDataSetChanged();
         }
     }
 
     private void initView() {
         notesRecyclerView = findViewById(R.id.notes_recyclerview);
         addButton = findViewById(R.id.add_button);
-        emptyText  = findViewById(R.id.emptyText);
+        emptyText = findViewById(R.id.emptyText);
     }
 
     @Override
@@ -85,9 +134,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         EditText text = view.findViewById(R.id.edt_alert_text);
                         String time = getCurrentTime();
                         databaseList.setDate(time);
+                        if(!TextUtils.isEmpty(text.getText().toString().trim())){
                         databaseList.setNotes(text.getText().toString());
                         notesDatabaseData.add(databaseList);
-
                         database = dbReference.getWritableDatabase();
                         ContentValues values = new ContentValues();
                         values.put(NoteClass.NOTE_CONTENT, text.getText().toString());
@@ -95,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         database.insert(NoteClass.TABLE_NAME, null, values);
                         emptyText.setVisibility(View.GONE);
                         adapter.notifyDataSetChanged();
+                        }
 
 
                     }
@@ -113,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String getCurrentTime() {
         DateFormat df = new SimpleDateFormat("h:mm a EEE MMM d yyyy");
         String date = df.format(Calendar.getInstance().getTime());
-        Log.d(TAG, "getCurrentTime: date "+date);
+        Log.d(TAG, "getCurrentTime: date " + date);
         return date;
     }
 }

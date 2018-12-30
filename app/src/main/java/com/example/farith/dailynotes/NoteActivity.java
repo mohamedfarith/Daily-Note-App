@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -31,22 +32,29 @@ public class NoteActivity extends AppCompatActivity {
         setContentView(R.layout.activity_note);
         noteText = findViewById(R.id.note_text);
         saveBtn = findViewById(R.id.save_btn);
-        finalDatabase= new NoteDb(this);
+        finalDatabase = new NoteDb(this);
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "onClick: save button is clicked "+noteText.getText().toString()+" "+adapterPosition);
-                finalDatabase.updateDb(database,noteText.getText().toString(),adapterPosition,getCurrentTime());
-                Intent backToMainActivity = new Intent(NoteActivity.this,MainActivity.class);
-                backToMainActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(backToMainActivity);
+                if (TextUtils.isEmpty(noteText.getText().toString().trim())) {
+                    Toast.makeText(NoteActivity.this,"the Note is empty",Toast.LENGTH_SHORT).show();
+                    Intent backToMainActivity = new Intent(NoteActivity.this, MainActivity.class);
+                    backToMainActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(backToMainActivity);
+                } else {
+                    Log.d(TAG, "onClick: save button is clicked " + noteText.getText().toString() + " " + adapterPosition);
+                    finalDatabase.updateDb(database, noteText.getText().toString(), adapterPosition, getCurrentTime());
+                    Intent backToMainActivity = new Intent(NoteActivity.this, MainActivity.class);
+                    backToMainActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(backToMainActivity);
+                }
             }
         });
         Intent intent = getIntent();
         notes = intent.getStringExtra("notes");
         adapterPosition = intent.getStringExtra("position");
         Log.d(TAG, "onCreate:notes " + notes);
-        Log.d(TAG, "onCreate: adapterPosition "+adapterPosition);
+        Log.d(TAG, "onCreate: adapterPosition " + adapterPosition);
         if (TextUtils.isEmpty(notes)) {
 
         } else {
@@ -63,10 +71,11 @@ public class NoteActivity extends AppCompatActivity {
 
 
     }
+
     private String getCurrentTime() {
         DateFormat df = new SimpleDateFormat("h:mm a EEE MMM d yy");
         String date = df.format(Calendar.getInstance().getTime());
-        Log.d(TAG, "getCurrentTime: date "+date);
+        Log.d(TAG, "getCurrentTime: date " + date);
         return date;
     }
 }
