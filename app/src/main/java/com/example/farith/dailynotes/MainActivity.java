@@ -1,29 +1,19 @@
 package com.example.farith.dailynotes;
 
-import android.content.BroadcastReceiver;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.farith.dailynotes.ModelClass.NoteClass;
 import com.example.farith.dailynotes.ModelClass.NotesDatabaseList;
 
 import java.text.DateFormat;
@@ -36,14 +26,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = MainActivity.class.getSimpleName();
     private RecyclerView notesRecyclerView;
     private FloatingActionButton addButton;
-    Context context;
     ArrayList<NotesDatabaseList> notesDatabaseData = new ArrayList<>();
     SQLiteDatabase database;
     NoteDb dbReference;
     NotesAdapter adapter;
-    NotesDatabaseList databaseList = new NotesDatabaseList();
     TextView emptyText;
     Boolean isGrid = true;
+    public static final String NOTIFICATION = "com.example.farith.dailynotes.MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         initView();
         dbReference = new NoteDb(MainActivity.this);
-        dbReference.insertStatusData(database,"true");
+        dbReference.insertStatusData(database, "true");
         addButton.setOnClickListener(this);
 
     }
@@ -83,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             isGrid = false;
             dbReference = new NoteDb(MainActivity.this);
             notesDatabaseData = dbReference.readValues(database);
+            Log.d(TAG, "onOptionsItemSelected:readvalues from db " + notesDatabaseData.get(0).getNotificationID());
             dbReference.updateStatusData(database, isGrid.toString());
             adapter = new NotesAdapter(MainActivity.this, notesDatabaseData);
             notesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -92,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
         } else {
-              isGrid = true;
+            isGrid = true;
             dbReference.updateStatusData(database, isGrid.toString());
 //            invalidateOptionsMenu();
             adapter = new NotesAdapter(MainActivity.this, notesDatabaseData);
@@ -150,12 +140,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void updateRecyclerView(int position) {
+    public void updateRecyclerView(int position, String notificationId) {
         notesDatabaseData.remove(position);
         adapter.notifyItemRemoved(position);
-
-
-
+        //Cancelling the notification when the item is deleted from the list
+        Intent cancelNotificationIntent = new Intent(this, CancelNotification.class);
+        cancelNotificationIntent.putExtra("cancel_noti", notificationId);
+        sendBroadcast(cancelNotificationIntent);
         if (notesDatabaseData.size() == 0) {
             emptyText.setVisibility(View.VISIBLE);
             notesDatabaseData.clear();

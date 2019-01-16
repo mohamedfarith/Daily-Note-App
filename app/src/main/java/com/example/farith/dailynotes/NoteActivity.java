@@ -5,29 +5,31 @@ import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.strictmode.SqliteObjectLeakedViolation;
-import android.support.annotation.IntRange;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Random;
 
-public class NoteActivity extends AppCompatActivity{
+public class NoteActivity extends AppCompatActivity {
     EditText noteText;
     String notes;
     String adapterPosition;
@@ -38,12 +40,26 @@ public class NoteActivity extends AppCompatActivity{
     private static final String TAG = NoteActivity.class.getSimpleName();
     Button btnRemindMe;
     String formattedDate;
-
+    String notificationID;
+    String reminderTime = "No reminder Added";
+    TextView reminderText;
+    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String cancelNotificationId = intent.getStringExtra("cancel_noti");
+            Log.d(TAG, "onReceive: cancelling notification id is");
+            Intent newIntent = new Intent(NoteActivity.this, Notification.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), Integer.parseInt(cancelNotificationId), newIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+            alarmManager.cancel(pendingIntent);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
+        reminderText = findViewById(R.id.reminder_text);
         noteText = findViewById(R.id.note_text);
         saveBtn = findViewById(R.id.save_btn);
         btnRemindMe = findViewById(R.id.btn_remind_me);
@@ -61,12 +77,14 @@ public class NoteActivity extends AppCompatActivity{
                     //Checking whether the intent is from adapter or add button by verifying the intent extra
                     if (!TextUtils.isEmpty(adapterPosition)) {
                         Log.d(TAG, "onClick: save button is clicked " + noteText.getText().toString() + " " + adapterPosition);
-                        finalDatabase.updateDb(database, noteText.getText().toString(), previousTime, getTimeInMillisconds());
+                        finalDatabase.updateDb(database, noteText.getText().toString(), previousTime, getTimeInMillisconds(), notificationID, reminderTime);
                         Intent backToMainActivity = new Intent(NoteActivity.this, MainActivity.class);
                         backToMainActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(backToMainActivity);
                     } else {
-                        finalDatabase.insertData(database, noteText.getText().toString(), getTimeInMillisconds());
+                        notificationID = createNotificationId();
+                        Log.d(TAG, "onClick: notification id created and the id is " + notificationID);
+                        finalDatabase.insertData(database, noteText.getText().toString(), getTimeInMillisconds(), notificationID, reminderTime);
                         Intent backToMainActivity = new Intent(NoteActivity.this, MainActivity.class);
                         backToMainActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(backToMainActivity);
@@ -78,15 +96,20 @@ public class NoteActivity extends AppCompatActivity{
         notes = intent.getStringExtra("notes");
         adapterPosition = intent.getStringExtra("position");
         previousTime = intent.getStringExtra("previousTime");
-        Log.d(TAG, "onCreate:notes " + notes);
-        Log.d(TAG, "onCreate: adapterPosition " + adapterPosition);
+        notificationID = intent.getStringExtra("noti");
+        reminderTime = intent.getStringExtra("reminder_time");
+        Log.d(TAG, "onCreate:notes " + notes + "onCreate: adapterPosition " + adapterPosition + " reminder time from intent " + reminderTime);
         if (TextUtils.isEmpty(notes)) {
 
         } else {
             noteText.setText(notes);
             //This line is to take the cursor to the end of the edit text field
             noteText.setSelection(noteText.getText().toString().length());
-
+            if (TextUtils.isEmpty(reminderTime)) {
+                reminderText.setText("No Reminder Added");
+            } else {
+                reminderText.setText("Reminder is set to " + reminderTime);
+            }
         }
         btnRemindMe.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -98,13 +121,32 @@ public class NoteActivity extends AppCompatActivity{
                 }
             }
         });
+        noteText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                Log.d(TAG, "beforeTextChanged: ");
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Log.d(TAG, "onTextChanged: ");
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(TextUtils.isEmpty(s)){
+            noteText.setHint("Enter your note here");
+                }
+            }
+        });
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-
-
+    /*this method create notification id to send the broadcast, this id is also added in the database and
+     retrieved in the main activity while deleting the note */
+    private String createNotificationId() {
+        Random randomNumber = new Random();
+        int uniqueRandomNumber = randomNumber.nextInt(900000);
+        return String.valueOf(uniqueRandomNumber);
     }
 
     //To get the time in milliseconds and this value is stored in the database
@@ -124,6 +166,7 @@ public class NoteActivity extends AppCompatActivity{
                 createTimePicker(year, month, dayOfMonth);
             }
         }, Calendar.getInstance().get(Calendar.YEAR), Calendar.getInstance().get(Calendar.MONTH), Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
         datePickerDialog.show();
     }
 
@@ -144,17 +187,30 @@ public class NoteActivity extends AppCompatActivity{
 
     //call to the notification class that extends Broadcast receiver to display the notification
     public void sendNotification(String formattedDate) {
-        Intent intent = new Intent(NoteActivity.this, Notification.class);
-        if (TextUtils.isEmpty(notes)) {
-            notes = noteText.getText().toString().trim();
+        //To make sure user has saved the note before adding reminder
+        if (TextUtils.isEmpty(notificationID)) {
+            Toast.makeText(this, "Kindly save the Note before adding the reminder", Toast.LENGTH_LONG).show();
+        } else {
+            if (convertTo24hrsMilliseconds(formattedDate) > new Date().getTime()) {
+                Intent intent = new Intent(NoteActivity.this, Notification.class);
+                if (TextUtils.isEmpty(notes)) {
+                    notes = noteText.getText().toString().trim();
+                }
+                intent.putExtra("notes", notes);
+                intent.putExtra("position", notificationID);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), Integer.parseInt(notificationID), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+                alarmManager.set(AlarmManager.RTC_WAKEUP, convertTo24hrsMilliseconds(formattedDate), pendingIntent);
+                reminderTime = convertToReadableDateFormat(formattedDate);
+                reminderText.setText("Reminder is set to " + reminderTime);
+                Toast.makeText(getApplicationContext(), "Reminder Added on " + convertToReadableDateFormat(formattedDate), Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this, "The time is set to past time an so reminder cannot be set, Change it to future time to get Notification", Toast.LENGTH_LONG).show();
+            }
+
         }
-        intent.putExtra("notes", notes);
-        intent.putExtra("position", adapterPosition);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 100, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        alarmManager.set(AlarmManager.RTC_WAKEUP, convertToMilliseconds(formattedDate), pendingIntent);
-        Toast.makeText(getApplicationContext(),"Reminder Added on "+convertToReadableDateFormat(formattedDate),Toast.LENGTH_LONG).show();
     }
+
     //for displaying the date and time in toast
     private String convertToReadableDateFormat(String formattedDate) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy, h:mm a");
@@ -163,6 +219,19 @@ public class NoteActivity extends AppCompatActivity{
         return formattedDate;
     }
 
+    public long convertTo24hrsMilliseconds(String formattedDate) {
+        String myDate = formattedDate;
+        long milliseconds = 1;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/mm/dd HH:mm");
+        try {
+            Date date = simpleDateFormat.parse(myDate);
+            milliseconds = date.getTime();
+            Log.d(TAG, "convertToMilliseconds: " + milliseconds);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return milliseconds;
+    }
 
     //converts the Date and Time content got from Date and time picker alertDialog
     private long convertToMilliseconds(String formattedDate) {
@@ -178,11 +247,8 @@ public class NoteActivity extends AppCompatActivity{
         }
         return milliseconds;
     }
-
-
-
-
 }
+
 
 
 

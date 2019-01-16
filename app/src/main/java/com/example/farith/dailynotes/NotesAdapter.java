@@ -26,33 +26,35 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder> {
-   private ArrayList<NotesDatabaseList> noteDbList;
-   private Context mContext;
-//   private TextView txtnotesItem;
+    private ArrayList<NotesDatabaseList> noteDbList;
+    private Context mContext;
+    //   private TextView txtnotesItem;
 //   private TextView txtCurrentTime;
-   NoteDb deleteRowInDb;
-   SQLiteDatabase deleteRowInDatabase;
+    NoteDb deleteRowInDb;
+    SQLiteDatabase deleteRowInDatabase;
     LongPressActionListener longPressListener;
-   private static final String TAG = NotesAdapter.class.getSimpleName();
-    NotesAdapter(Context mContext, ArrayList<NotesDatabaseList> txt){
-        this.mContext  = mContext;
-        this.noteDbList= txt;
+    private static final String TAG = NotesAdapter.class.getSimpleName();
+
+    NotesAdapter(Context mContext, ArrayList<NotesDatabaseList> txt) {
+        this.mContext = mContext;
+        this.noteDbList = txt;
     }
+
     @NonNull
     @Override
     public NotesAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.notes_view,parent,false);
-      //  initView(view);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.notes_view, parent, false);
+        //  initView(view);
         return (new MyViewHolder(view));
 
     }
 
     @Override
     public void onBindViewHolder(@NonNull NotesAdapter.MyViewHolder holder, int position) {
-        Log.d(TAG, "onBindViewHolder: "+noteDbList.get(position).getNotes());
+        Log.d(TAG, "onBindViewHolder: " + noteDbList.get(position).getNotes());
         String noteValue = noteDbList.get(holder.getAdapterPosition()).getNotes();
-    holder.txtnotesItem.setText(noteValue);
-    holder.txtCurrentTime.setText(getCurrentTime(noteDbList.get(holder.getAdapterPosition()).getDate()));
+        holder.txtnotesItem.setText(noteValue);
+        holder.txtCurrentTime.setText(getCurrentTime(noteDbList.get(holder.getAdapterPosition()).getDate()));
     }
 
     @Override
@@ -60,9 +62,10 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
         return noteDbList.size();
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder{
-         TextView txtnotesItem;
-         TextView txtCurrentTime;
+    class MyViewHolder extends RecyclerView.ViewHolder {
+        TextView txtnotesItem;
+        TextView txtCurrentTime;
+
         public MyViewHolder(@NonNull final View itemView) {
             super(itemView);
             txtnotesItem = itemView.findViewById(R.id.txt_notes);
@@ -70,13 +73,15 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(TAG, "onClick: "+noteDbList.get(getAdapterPosition()));
-                    Intent intent = new Intent(mContext,NoteActivity.class);
-                    Log.d(TAG, "onClick: adapter postition"+getAdapterPosition());
-                    intent.putExtra("notes",noteDbList.get(getAdapterPosition()).getNotes());
-                    String value = String.valueOf(getAdapterPosition()+1);
-                    intent.putExtra("position",value);
-                    intent.putExtra("previousTime",noteDbList.get(getAdapterPosition()).getDate());
+                    Log.d(TAG, "onClick: " + noteDbList.get(getAdapterPosition()));
+                    Intent intent = new Intent(mContext, NoteActivity.class);
+                    Log.d(TAG, "onClick: adapter postition" + getAdapterPosition());
+                    intent.putExtra("notes", noteDbList.get(getAdapterPosition()).getNotes());
+                    String value = String.valueOf(getAdapterPosition() + 1);
+                    intent.putExtra("position", value);
+                    intent.putExtra("previousTime", noteDbList.get(getAdapterPosition()).getDate());
+                    intent.putExtra("noti", noteDbList.get(getAdapterPosition()).getNotificationID());
+                    intent.putExtra("reminder_time", noteDbList.get(getAdapterPosition()).getReminder());
                     mContext.startActivity(intent);
 
                 }
@@ -95,9 +100,9 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             deleteRowInDb = new NoteDb(mContext);
-                            deleteRowInDb.deleteRowInDb(deleteRowInDatabase,getAdapterPosition(),noteDbList.get(getAdapterPosition()).getNotes());
+                            deleteRowInDb.deleteRowInDb(deleteRowInDatabase, getAdapterPosition(), noteDbList.get(getAdapterPosition()).getNotes());
                             longPressListener = (LongPressActionListener) mContext;
-                            longPressListener.updateRecyclerView(getAdapterPosition());
+                            longPressListener.updateRecyclerView(getAdapterPosition(), noteDbList.get(getAdapterPosition()).getNotificationID());
                         }
                     });
                     deleteAlertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
@@ -105,7 +110,8 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
                         public void onClick(DialogInterface dialog, int which) {
 
                         }
-                    });deleteAlertDialog.create().show();
+                    });
+                    deleteAlertDialog.create().show();
                 }
             });
         }
