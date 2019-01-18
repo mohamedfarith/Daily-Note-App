@@ -126,6 +126,11 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
         Log.d(TAG, "getCurrentTime: date " + date);
         return formattedDate;
     }
+    public void updateList(ArrayList<NotesDatabaseList> list){
+        noteDbList = new ArrayList<>();
+        noteDbList.addAll(list);
+        notifyDataSetChanged();
+    }
 
 }
 

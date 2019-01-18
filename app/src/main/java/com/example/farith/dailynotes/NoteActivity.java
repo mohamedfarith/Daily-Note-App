@@ -1,11 +1,13 @@
 package com.example.farith.dailynotes;
 
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
@@ -246,6 +248,35 @@ public class NoteActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return milliseconds;
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        if(!noteText.getText().toString().equals(notes)){
+            final AlertDialog.Builder backPressedAlertDialog = new AlertDialog.Builder(this);
+            backPressedAlertDialog.setTitle("Note is not Saved");
+            backPressedAlertDialog.setMessage("Do you want to continue without saving, The changes made will not be reflected");
+            backPressedAlertDialog.setPositiveButton("No", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            });
+            backPressedAlertDialog.setNegativeButton("Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent backToMainActivity = new Intent(NoteActivity.this, MainActivity.class);
+                    backToMainActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(backToMainActivity);
+                }
+            });
+            backPressedAlertDialog.show();
+
+        }
+        else{
+            super.onBackPressed();
+        }
     }
 }
 

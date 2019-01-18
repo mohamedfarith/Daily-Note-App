@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, LongPressActionListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, LongPressActionListener , SearchView.OnQueryTextListener{
     private static final String TAG = MainActivity.class.getSimpleName();
     private RecyclerView notesRecyclerView;
     private FloatingActionButton addButton;
@@ -48,6 +49,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.convert_to_grid, menu);
+        MenuItem search = menu.findItem(R.id.menu_search);
+        SearchView searchView = (SearchView) search.getActionView();
+        searchView.setOnQueryTextListener(this);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -151,5 +155,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             emptyText.setVisibility(View.VISIBLE);
             notesDatabaseData.clear();
         }
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String s) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String s) {
+        ArrayList<NotesDatabaseList> tempList = new ArrayList<>();
+        for(int i=0;i<notesDatabaseData.size();i++){
+          if(notesDatabaseData.get(i).getNotes().toLowerCase().contains(s.toLowerCase())){
+              tempList.add(notesDatabaseData.get(i));
+          }
+        }
+        adapter.updateList(tempList);
+        return true;
     }
 }
