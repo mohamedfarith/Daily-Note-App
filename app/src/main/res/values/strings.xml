@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">DailyNotes</string>
+    <string name="convert_to_list_view">Convert to list View</string>
+    <string name="convert_to_grid_view">convert to grid view</string>
+</resources>
