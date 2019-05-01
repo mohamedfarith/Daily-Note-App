@@ -21,7 +21,7 @@ public class Notification extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String notes = intent.getStringExtra("notes");
         String notificationId = intent.getStringExtra("position");
-        Intent newIntent = new Intent(context, NoteActivity.class);
+        Intent newIntent = new Intent(context, MainActivity.class);
         newIntent.putExtra("notes", notes);
         newIntent.putExtra("position", notificationId);
         newIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);

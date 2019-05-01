@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -193,7 +194,7 @@ public class NoteActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(notificationID)) {
             Toast.makeText(this, "Kindly save the Note before adding the reminder", Toast.LENGTH_LONG).show();
         } else {
-            if (convertTo24hrsMilliseconds(formattedDate) > new Date().getTime()) {
+            if (convertTo24hrsMilliseconds(formattedDate ) > System.currentTimeMillis()) {
                 Intent intent = new Intent(NoteActivity.this, Notification.class);
                 if (TextUtils.isEmpty(notes)) {
                     notes = noteText.getText().toString().trim();
@@ -224,7 +225,7 @@ public class NoteActivity extends AppCompatActivity {
     public long convertTo24hrsMilliseconds(String formattedDate) {
         String myDate = formattedDate;
         long milliseconds = 1;
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/mm/dd HH:mm");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
         try {
             Date date = simpleDateFormat.parse(myDate);
             milliseconds = date.getTime();
