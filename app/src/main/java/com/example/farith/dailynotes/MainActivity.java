@@ -13,6 +13,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 import com.example.farith.dailynotes.ModelClass.NotesDatabaseList;
@@ -23,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, LongPressActionListener , SearchView.OnQueryTextListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, LongPressActionListener, SearchView.OnQueryTextListener {
     private static final String TAG = MainActivity.class.getSimpleName();
     private RecyclerView notesRecyclerView;
     private FloatingActionButton addButton;
@@ -40,10 +42,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
+        loadBasicAnimation(R.id.add_button);
         dbReference = new NoteDb(MainActivity.this);
         dbReference.insertStatusData(database, "true");
         addButton.setOnClickListener(this);
 
+    }
+
+    //execute some basic animations in the activity
+    private void loadBasicAnimation(int resID) {
+        Animation animation = AnimationUtils.loadAnimation(MainActivity.this, R.anim.bounce);
+        animation.setInterpolator(new android.view.animation.BounceInterpolator());
+        findViewById(resID).startAnimation(animation);
     }
 
     @Override
