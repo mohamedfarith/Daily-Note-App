@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Daily-Note-App.iml" filepath="$PROJECT_DIR$/Daily-Note-App.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Daily-Note-App-app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Daily-Note-App-app.iml" group="Daily-Note-App/app" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Work-Daily-Note-App.iml" filepath="$PROJECT_DIR$/.idea/modules/Work-Daily-Note-App.iml" group="Daily-Note-App" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
