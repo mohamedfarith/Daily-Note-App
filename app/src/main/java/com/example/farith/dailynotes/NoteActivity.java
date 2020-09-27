@@ -9,10 +9,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.database.sqlite.SQLiteDatabase;
-import android.os.SystemClock;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -26,6 +22,11 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.farith.dailynotes.ModelClass.NoteEntityClass;
+import com.example.farith.dailynotes.ModelClass.NoteRepository;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -38,8 +39,6 @@ public class NoteActivity extends AppCompatActivity {
     String adapterPosition;
     String previousTime;
     Button saveBtn;
-    NoteDb finalDatabase;
-    SQLiteDatabase database;
     private static final String TAG = NoteActivity.class.getSimpleName();
     Button btnRemindMe;
     String formattedDate;
@@ -66,7 +65,6 @@ public class NoteActivity extends AppCompatActivity {
         noteText = findViewById(R.id.note_text);
         saveBtn = findViewById(R.id.save_btn);
         btnRemindMe = findViewById(R.id.btn_remind_me);
-        finalDatabase = new NoteDb(this);
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -80,14 +78,19 @@ public class NoteActivity extends AppCompatActivity {
                     //Checking whether the intent is from adapter or add button by verifying the intent extra
                     if (!TextUtils.isEmpty(adapterPosition)) {
                         Log.d(TAG, "onClick: save button is clicked " + noteText.getText().toString() + " " + adapterPosition);
-                        finalDatabase.updateDb(database, noteText.getText().toString(), previousTime, getTimeInMillisconds(), notificationID, reminderTime);
+                        NoteRepository.getInstance().updateValue(noteText.getText().toString(), previousTime, getTimeInMillisconds(), reminderTime, notificationID);
                         Intent backToMainActivity = new Intent(NoteActivity.this, MainActivity.class);
                         backToMainActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(backToMainActivity);
                     } else {
                         notificationID = createNotificationId();
                         Log.d(TAG, "onClick: notification id created and the id is " + notificationID);
-                        finalDatabase.insertData(database, noteText.getText().toString(), getTimeInMillisconds(), notificationID, reminderTime);
+                        NoteEntityClass noteEntityClass = new NoteEntityClass();
+                        noteEntityClass.date = getTimeInMillisconds();
+                        noteEntityClass.notificationID = notificationID;
+                        noteEntityClass.notes = noteText.getText().toString();
+                        noteEntityClass.reminder = reminderTime;
+                        NoteRepository.getInstance().insertData(noteEntityClass);
                         Intent backToMainActivity = new Intent(NoteActivity.this, MainActivity.class);
                         backToMainActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(backToMainActivity);
@@ -137,8 +140,8 @@ public class NoteActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if(TextUtils.isEmpty(s)){
-            noteText.setHint("Enter your note here");
+                if (TextUtils.isEmpty(s)) {
+                    noteText.setHint("Enter your note here");
                 }
             }
         });
@@ -194,7 +197,7 @@ public class NoteActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(notificationID)) {
             Toast.makeText(this, "Kindly save the Note before adding the reminder", Toast.LENGTH_LONG).show();
         } else {
-            if (convertTo24hrsMilliseconds(formattedDate ) > System.currentTimeMillis()) {
+            if (convertTo24hrsMilliseconds(formattedDate) > System.currentTimeMillis()) {
                 Intent intent = new Intent(NoteActivity.this, Notification.class);
                 if (TextUtils.isEmpty(notes)) {
                     notes = noteText.getText().toString().trim();
@@ -254,7 +257,7 @@ public class NoteActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 
-        if(!noteText.getText().toString().equals(notes)){
+        if (!noteText.getText().toString().equals(notes)) {
             final AlertDialog.Builder backPressedAlertDialog = new AlertDialog.Builder(this);
             backPressedAlertDialog.setTitle("Note is not Saved");
             backPressedAlertDialog.setMessage("Do you want to continue without saving, The changes made will not be reflected");
@@ -274,8 +277,7 @@ public class NoteActivity extends AppCompatActivity {
             });
             backPressedAlertDialog.show();
 
-        }
-        else{
+        } else {
             super.onBackPressed();
         }
     }

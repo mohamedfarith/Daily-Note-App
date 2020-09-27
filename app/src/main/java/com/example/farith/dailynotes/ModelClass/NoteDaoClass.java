@@ -6,6 +6,9 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static android.icu.text.MessagePattern.ArgType.SELECT;
 
 @Dao
@@ -16,7 +19,7 @@ public interface NoteDaoClass {
 
 
     @Query("SELECT * FROM " + NoteClass.TABLE_NAME + " ORDER BY " + NoteClass.DATE + " DESC")
-    void readValues();
+    List<NoteEntityClass> readValues();
 
 
     @Query("UPDATE " + NoteClass.TABLE_NAME + " SET "
@@ -28,13 +31,16 @@ public interface NoteDaoClass {
     void updateValue(String note, String previousTime, String currentTime, String reminderTime, String notificationId);
 
 
-    @Query(" DELETE FROM " + NoteClass.TABLE_NAME + " WHERE " + NoteClass.DATE + "=:date")
-    void deleteValue(String date);
+    @Query(" DELETE FROM " + NoteClass.TABLE_NAME + " WHERE " + NoteClass.NOTE_CONTENT + "=:note")
+    void deleteValue(String note);
 
 
-    @Query("UPDATE status SET layoutStatus =:status WHERE statusId = 1")
+    @Query("UPDATE layoutStatus SET status =:status WHERE statusId = 1")
     void updateStatusData(String status);
 
-    @Query("SELECT * FROM status WHERE statusId=1")
-    String readStatusData();
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertStatusData(StatusEntityClass statusEntityClass);
+
+    @Query("SELECT * FROM layoutStatus WHERE statusId=1")
+    StatusEntityClass readStatusData();
 }

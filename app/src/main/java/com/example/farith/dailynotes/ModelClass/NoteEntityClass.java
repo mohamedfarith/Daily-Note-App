@@ -10,6 +10,13 @@ import androidx.room.PrimaryKey;
 
 @Entity(tableName = NoteClass.TABLE_NAME)
 public class NoteEntityClass {
+
+//    public NoteEntityClass(String mDate, String mNotes, String mReminder, String mNotificationId) {
+//        this.date = mDate;
+//        this.notes = mNotes;
+//        this.notificationID = mNotificationId;
+//        this.reminder = mReminder;
+//    }
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = BaseColumns._ID)
     int id;
@@ -26,12 +33,6 @@ public class NoteEntityClass {
     @ColumnInfo(name = NoteClass.REMINDER_TIME)
     public String reminder;
 
-    NoteEntityClass(String mDate, String mNotes, String mReminder, String mNotificationId) {
-        this.date = mDate;
-        this.notes = mNotes;
-        this.notificationID = mNotificationId;
-        this.reminder = mReminder;
-    }
 
     public void setId(int id) {
         this.id = id;

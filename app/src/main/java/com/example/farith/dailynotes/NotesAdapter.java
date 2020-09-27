@@ -4,38 +4,31 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.farith.dailynotes.ModelClass.NotesDatabaseList;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
-import org.w3c.dom.Text;
+import com.example.farith.dailynotes.ModelClass.NoteEntityClass;
+import com.example.farith.dailynotes.ModelClass.NoteRepository;
 
-import java.security.PrivateKey;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder> {
-    private ArrayList<NotesDatabaseList> noteDbList;
+    private List<NoteEntityClass> noteDbList;
     private Context mContext;
-    //   private TextView txtnotesItem;
-//   private TextView txtCurrentTime;
-    NoteDb deleteRowInDb;
-    SQLiteDatabase deleteRowInDatabase;
     LongPressActionListener longPressListener;
     private static final String TAG = NotesAdapter.class.getSimpleName();
 
-    NotesAdapter(Context mContext, ArrayList<NotesDatabaseList> txt) {
+    NotesAdapter(Context mContext, List<NoteEntityClass> txt) {
         this.mContext = mContext;
         this.noteDbList = txt;
     }
@@ -99,8 +92,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
                     deleteAlertDialog.setTitle("CONFIRM DELETE").setPositiveButton("DELETE", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            deleteRowInDb = new NoteDb(mContext);
-                            deleteRowInDb.deleteRowInDb(deleteRowInDatabase, getAdapterPosition(), noteDbList.get(getAdapterPosition()).getNotes());
+                            NoteRepository.getInstance().deleteValue(noteDbList.get(getAdapterPosition()).getNotes());
                             longPressListener = (LongPressActionListener) mContext;
                             longPressListener.updateRecyclerView(getAdapterPosition(), noteDbList.get(getAdapterPosition()).getNotificationID());
                         }
@@ -126,7 +118,8 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
         Log.d(TAG, "getCurrentTime: date " + date);
         return formattedDate;
     }
-    public void updateList(ArrayList<NotesDatabaseList> list){
+
+    public void updateList(ArrayList<NoteEntityClass> list) {
         noteDbList = new ArrayList<>();
         noteDbList.addAll(list);
         notifyDataSetChanged();

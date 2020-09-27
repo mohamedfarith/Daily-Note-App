@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.farith.dailynotes">
-    <uses-permission android:name="android.permission.SET_ALARM"/>
+
+    <uses-permission android:name="android.permission.SET_ALARM" />
 
     <application
+        android:name=".ApplicationClass"
         android:allowBackup="true"
         android:icon="@drawable/daily_note_app_icon"
         android:label="@string/app_name"
@@ -17,8 +20,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".NoteActivity"></activity>
-        <receiver android:name=".Notification"></receiver>
+        <activity android:name=".NoteActivity" />
+
+        <receiver android:name=".Notification" />
         <receiver android:name=".CancelNotification" />
     </application>
 
