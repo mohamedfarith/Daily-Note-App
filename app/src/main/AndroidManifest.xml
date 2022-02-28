@@ -17,8 +17,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".NoteActivity"></activity>
-        <receiver android:name=".Notification"></receiver>
+        <activity android:name=".NoteActivity" />
+
+        <receiver android:name=".Notification" />
         <receiver android:name=".CancelNotification" />
     </application>
 

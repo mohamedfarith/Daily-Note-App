@@ -5,24 +5,20 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.farith.dailynotes.ModelClass.NotesDatabaseList;
 
-import org.w3c.dom.Text;
-
-import java.security.PrivateKey;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder> {
@@ -126,7 +122,8 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
         Log.d(TAG, "getCurrentTime: date " + date);
         return formattedDate;
     }
-    public void updateList(ArrayList<NotesDatabaseList> list){
+
+    public void updateList(ArrayList<NotesDatabaseList> list) {
         noteDbList = new ArrayList<>();
         noteDbList.addAll(list);
         notifyDataSetChanged();
