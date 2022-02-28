@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -47,8 +47,8 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="16dp"
-        android:text="No Reminder Added"
         android:padding="10dp"
+        android:text="No Reminder Added"
         app:layout_constraintBottom_toTopOf="@id/btn_remind_me"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -59,9 +59,9 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/colorPrimary"
         android:text="save"
         android:textColor="@color/white"
-        android:backgroundTint="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.971"
@@ -73,12 +73,12 @@
         android:layout_height="45dp"
         android:layout_marginEnd="56dp"
         android:layout_marginBottom="16dp"
-        android:text="Add Remainder"
         android:backgroundTint="@color/red"
-        android:textColor="@color/white"
         android:paddingLeft="20dp"
         android:paddingRight="20dp"
+        android:text="Add Remainder"
+        android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/save_btn" />
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

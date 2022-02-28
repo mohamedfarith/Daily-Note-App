@@ -2,20 +2,21 @@ package com.example.farith.dailynotes;
 
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.farith.dailynotes.ModelClass.NotesDatabaseList;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -23,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, LongPressActionListener , SearchView.OnQueryTextListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, LongPressActionListener, SearchView.OnQueryTextListener {
     private static final String TAG = MainActivity.class.getSimpleName();
     private RecyclerView notesRecyclerView;
     private FloatingActionButton addButton;
@@ -51,7 +52,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         getMenuInflater().inflate(R.menu.convert_to_grid, menu);
         MenuItem search = menu.findItem(R.id.menu_search);
         SearchView searchView = (SearchView) search.getActionView();
-        searchView.setOnQueryTextListener(this);
+        if (searchView != null)
+            searchView.setOnQueryTextListener(this);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -72,7 +74,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         super.onOptionsItemSelected(item);
         if (item.getItemId() == R.id.change_to_list) {
-//            invalidateOptionsMenu();
             isGrid = false;
             dbReference = new NoteDb(MainActivity.this);
             notesDatabaseData = dbReference.readValues(database);
@@ -80,10 +81,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             dbReference.updateStatusData(database, isGrid.toString());
             adapter = new NotesAdapter(MainActivity.this, notesDatabaseData);
             notesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-            notesRecyclerView.setAdapter(adapter);
-            if (notesDatabaseData.size() == 0) {
-                emptyText.setVisibility(View.VISIBLE);
-            }
 
         } else {
             isGrid = true;
@@ -91,10 +88,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            invalidateOptionsMenu();
             adapter = new NotesAdapter(MainActivity.this, notesDatabaseData);
             notesRecyclerView.setLayoutManager(new GridLayoutManager(this, 2, LinearLayoutManager.VERTICAL, false));
-            notesRecyclerView.setAdapter(adapter);
-            if (notesDatabaseData.size() == 0) {
-                emptyText.setVisibility(View.VISIBLE);
-            }
+        }
+        notesRecyclerView.setAdapter(adapter);
+        if (notesDatabaseData.size() == 0) {
+            emptyText.setVisibility(View.VISIBLE);
         }
         return true;
     }
@@ -110,6 +107,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             notesRecyclerView.setAdapter(adapter);
             if (notesDatabaseData.size() == 0) {
                 emptyText.setVisibility(View.VISIBLE);
+
+
             }
         } else {
             adapter = new NotesAdapter(MainActivity.this, notesDatabaseData);
@@ -165,10 +164,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onQueryTextChange(String s) {
         ArrayList<NotesDatabaseList> tempList = new ArrayList<>();
-        for(int i=0;i<notesDatabaseData.size();i++){
-          if(notesDatabaseData.get(i).getNotes().toLowerCase().contains(s.toLowerCase())){
-              tempList.add(notesDatabaseData.get(i));
-          }
+        for (int i = 0; i < notesDatabaseData.size(); i++) {
+            if (notesDatabaseData.get(i).getNotes().toLowerCase().contains(s.toLowerCase())) {
+                tempList.add(notesDatabaseData.get(i));
+            }
         }
         adapter.updateList(tempList);
         return true;

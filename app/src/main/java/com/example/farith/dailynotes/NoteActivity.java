@@ -9,10 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.SystemClock;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -25,6 +22,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -137,8 +136,8 @@ public class NoteActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if(TextUtils.isEmpty(s)){
-            noteText.setHint("Enter your note here");
+                if (TextUtils.isEmpty(s)) {
+                    noteText.setHint("Enter your note here");
                 }
             }
         });
@@ -194,7 +193,7 @@ public class NoteActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(notificationID)) {
             Toast.makeText(this, "Kindly save the Note before adding the reminder", Toast.LENGTH_LONG).show();
         } else {
-            if (convertTo24hrsMilliseconds(formattedDate ) > System.currentTimeMillis()) {
+            if (convertTo24hrsMilliseconds(formattedDate) > System.currentTimeMillis()) {
                 Intent intent = new Intent(NoteActivity.this, Notification.class);
                 if (TextUtils.isEmpty(notes)) {
                     notes = noteText.getText().toString().trim();
@@ -254,7 +253,7 @@ public class NoteActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 
-        if(!noteText.getText().toString().equals(notes)){
+        if (!noteText.getText().toString().equals(notes)) {
             final AlertDialog.Builder backPressedAlertDialog = new AlertDialog.Builder(this);
             backPressedAlertDialog.setTitle("Note is not Saved");
             backPressedAlertDialog.setMessage("Do you want to continue without saving, The changes made will not be reflected");
@@ -274,8 +273,7 @@ public class NoteActivity extends AppCompatActivity {
             });
             backPressedAlertDialog.show();
 
-        }
-        else{
+        } else {
             super.onBackPressed();
         }
     }
