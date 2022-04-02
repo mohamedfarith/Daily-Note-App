@@ -1,4 +1,4 @@
-package com.example.farith.dailynotes;
+package com.example.farith.dailynotes.db;
 
 import android.content.ContentValues;
 import android.content.Context;

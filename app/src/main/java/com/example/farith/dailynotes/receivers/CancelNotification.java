@@ -1,4 +1,4 @@
-package com.example.farith.dailynotes;
+package com.example.farith.dailynotes.receivers;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
 
 import static android.content.Context.ALARM_SERVICE;
 

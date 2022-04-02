@@ -1,4 +1,4 @@
-package com.example.farith.dailynotes;
+package com.example.farith.dailynotes.ui;
 
 import android.app.AlarmManager;
 import android.app.AlertDialog;
@@ -24,6 +24,10 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.farith.dailynotes.db.NoteDb;
+import com.example.farith.dailynotes.receivers.Notification;
+import com.example.farith.dailynotes.R;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

@@ -1,4 +1,4 @@
-package com.example.farith.dailynotes;
+package com.example.farith.dailynotes.ui.adapters;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -15,6 +15,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.farith.dailynotes.ModelClass.NotesDatabaseList;
+import com.example.farith.dailynotes.R;
+import com.example.farith.dailynotes.db.NoteDb;
+import com.example.farith.dailynotes.ui.NoteActivity;
+import com.example.farith.dailynotes.ui.interfaces.LongPressActionListener;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -31,7 +35,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
     LongPressActionListener longPressListener;
     private static final String TAG = NotesAdapter.class.getSimpleName();
 
-    NotesAdapter(Context mContext, ArrayList<NotesDatabaseList> txt) {
+    public NotesAdapter(Context mContext, ArrayList<NotesDatabaseList> txt) {
         this.mContext = mContext;
         this.noteDbList = txt;
     }

@@ -1,4 +1,4 @@
-package com.example.farith.dailynotes;
+package com.example.farith.dailynotes.ui.interfaces;
 
 import android.content.BroadcastReceiver;
 

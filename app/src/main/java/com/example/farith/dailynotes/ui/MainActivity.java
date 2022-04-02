@@ -1,4 +1,4 @@
-package com.example.farith.dailynotes;
+package com.example.farith.dailynotes.ui;
 
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,7 +15,12 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.farith.dailynotes.receivers.CancelNotification;
+import com.example.farith.dailynotes.ui.interfaces.LongPressActionListener;
 import com.example.farith.dailynotes.ModelClass.NotesDatabaseList;
+import com.example.farith.dailynotes.db.NoteDb;
+import com.example.farith.dailynotes.ui.adapters.NotesAdapter;
+import com.example.farith.dailynotes.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.DateFormat;
@@ -34,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     NotesAdapter adapter;
     TextView emptyText;
     Boolean isGrid = true;
-    public static final String NOTIFICATION = "com.example.farith.dailynotes.MainActivity";
+    public static final String NOTIFICATION = "com.example.farith.dailynotes.ui.MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

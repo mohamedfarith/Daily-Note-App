@@ -1,4 +1,4 @@
-package com.example.farith.dailynotes;
+package com.example.farith.dailynotes.receivers;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -12,6 +12,9 @@ import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import androidx.core.app.NotificationCompat;
+
+import com.example.farith.dailynotes.R;
+import com.example.farith.dailynotes.ui.MainActivity;
 
 
 public class Notification extends BroadcastReceiver {
