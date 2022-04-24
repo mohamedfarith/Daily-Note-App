@@ -1,102 +1,67 @@
 package com.example.farith.dailynotes.ui.adapters
 
-import android.app.*
-import android.content.*
-import android.database.sqlite.SQLiteDatabase
+import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
-import android.view.View.OnLongClickListener
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.farith.dailynotes.R
-import com.example.farith.dailynotes.db.NoteDb
-import com.example.farith.dailynotes.modelClass.NotesDatabaseList
+import com.example.farith.dailynotes.databinding.NotesViewBinding
+import com.example.farith.dailynotes.modelClass.NoteClass
 import com.example.farith.dailynotes.ui.NoteActivity
 import com.example.farith.dailynotes.ui.adapters.NotesAdapter.MyViewHolder
-import com.example.farith.dailynotes.ui.interfaces.LongPressActionListener
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
 class NotesAdapter(
-    private val mContext: Context,
-    private var noteDbList: ArrayList<NotesDatabaseList>
+    private var noteDbList: ArrayList<NoteClass>
 ) : RecyclerView.Adapter<MyViewHolder>() {
-    //   private TextView txtnotesItem;
-    //   private TextView txtCurrentTime;
-    var deleteRowInDb: NoteDb? = null
-    var deleteRowInDatabase: SQLiteDatabase? = null
-    var longPressListener: LongPressActionListener? = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.notes_view, parent, false)
-        //  initView(view);
-        return MyViewHolder(view)
+        val noteViewBinding: NotesViewBinding =
+            DataBindingUtil.inflate(
+                LayoutInflater.from(parent.context),
+                R.layout.notes_view,
+                parent,
+                false
+            )
+        return MyViewHolder(noteViewBinding)
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        Log.d(TAG, "onBindViewHolder: " + noteDbList!![position]?.notes)
-        val noteValue = noteDbList!![holder.adapterPosition]?.notes
-        holder.txtnotesItem.text = noteValue
-        holder.txtCurrentTime.text = getCurrentTime(noteDbList!![holder.adapterPosition]?.date)
+        val noteValue = noteDbList[holder.bindingAdapterPosition].noteContent
+        holder.binding.txtNotes.text = noteValue
+        holder.binding.currentTime.text = noteDbList[position].date
     }
 
     override fun getItemCount(): Int {
-        return noteDbList!!.size
+        return noteDbList.size
     }
 
-    inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var txtnotesItem: TextView = itemView.findViewById(R.id.txt_notes)
-        var txtCurrentTime: TextView = itemView.findViewById(R.id.current_time)
-
+    inner class MyViewHolder(var binding: NotesViewBinding) :
+        RecyclerView.ViewHolder(binding.root) {
         init {
             itemView.setOnClickListener {
-                Log.d(TAG, "onClick: " + noteDbList!![adapterPosition])
-                val intent = Intent(mContext, NoteActivity::class.java)
-                Log.d(TAG, "onClick: adapter postition$adapterPosition")
-                intent.putExtra("notes", noteDbList!![adapterPosition]?.notes)
-                val value = (adapterPosition + 1).toString()
+                Log.d(TAG, "onClick: " + noteDbList[bindingAdapterPosition])
+                val intent = Intent(it.context, NoteActivity::class.java)
+                Log.d(TAG, "onClick: adapter postition$bindingAdapterPosition")
+                intent.putExtra("notes", noteDbList[bindingAdapterPosition].noteContent)
+                val value = (bindingAdapterPosition + 1).toString()
                 intent.putExtra("position", value)
-                intent.putExtra("previousTime", noteDbList!![adapterPosition]?.date)
-                intent.putExtra("noti", noteDbList!![adapterPosition]?.notificationID)
-                intent.putExtra("reminder_time", noteDbList!![adapterPosition]?.reminder)
-                mContext.startActivity(intent)
+                intent.putExtra("previousTime", noteDbList[bindingAdapterPosition].date)
+                intent.putExtra("noti", noteDbList[bindingAdapterPosition].notificationId)
+                intent.putExtra("reminder_time", noteDbList[bindingAdapterPosition].reminderTime)
+                it.context.startActivity(intent)
             }
-            itemView.setOnLongClickListener(object : OnLongClickListener {
-                override fun onLongClick(v: View): Boolean {
-                    createDialog()
-                    return true
-                }
-
-                private fun createDialog() {
-                    val deleteAlertDialog = AlertDialog.Builder(
-                        mContext
-                    )
-                    deleteAlertDialog.setTitle("CONFIRM DELETE")
-                        .setPositiveButton("DELETE") { dialog, which ->
-                            deleteRowInDb = NoteDb(mContext)
-                            deleteRowInDb!!.deleteRowInDb(
-                                deleteRowInDatabase,
-                                adapterPosition,
-                                noteDbList!![adapterPosition]?.notes
-                            )
-                            longPressListener = mContext as LongPressActionListener
-                            longPressListener!!.updateRecyclerView(
-                                adapterPosition,
-                                noteDbList!![adapterPosition]?.notificationID
-                            )
-                        }
-                    deleteAlertDialog.setNegativeButton("CANCEL") { dialog, which -> }
-                    deleteAlertDialog.create().show()
-                }
-            })
+            itemView.setOnLongClickListener { true }
         }
     }
 
     //The date is formatted from milliseconds to Simple date format
     private fun getCurrentTime(dbStoredDate: String?): String {
-        val df: DateFormat = SimpleDateFormat("EEE, d MMM yyyy, h:mm a")
+        val df: DateFormat = SimpleDateFormat("EEE, d MMM yyyy, h:mm a", Locale.getDefault())
         val dbDate = dbStoredDate!!.toLong()
         val date = Date(dbDate)
         val formattedDate = df.format(date)
@@ -104,7 +69,7 @@ class NotesAdapter(
         return formattedDate
     }
 
-    fun updateList(list: ArrayList<NotesDatabaseList>) {
+    fun updateList(list: List<NoteClass>) {
         noteDbList = ArrayList()
         noteDbList.addAll(list)
         notifyDataSetChanged()

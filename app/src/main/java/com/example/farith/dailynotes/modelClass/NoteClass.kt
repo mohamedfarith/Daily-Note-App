@@ -1,12 +1,20 @@
 package com.example.farith.dailynotes.modelClass
 
-import android.provider.BaseColumns
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import java.io.Serializable
 
-object NoteClass : BaseColumns {
-    const val TABLE_NAME = "notes"
-    const val ID = BaseColumns._ID
-    const val NOTE_CONTENT = "note_content"
-    const val DATE = "date"
-    const val NOTIFICATION_ID = "notification_id"
-    const val REMINDER_TIME = "reminder_time"
+@Entity(tableName = "notes")
+data class NoteClass(
+    @ColumnInfo(name = "note_content")
+    var noteContent: String?,
+    @ColumnInfo(name = "date")
+    var date: String?,
+    @PrimaryKey(autoGenerate = false)
+    var notificationId: Int?,
+    @ColumnInfo(name = "reminder_time")
+    var reminderTime: String?
+) : Serializable {
+
 }

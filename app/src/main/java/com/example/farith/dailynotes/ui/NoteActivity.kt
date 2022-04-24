@@ -1,173 +1,128 @@
 package com.example.farith.dailynotes.ui
 
 import android.app.*
-import com.example.farith.dailynotes.db.NoteDb
-import android.database.sqlite.SQLiteDatabase
-import android.text.TextUtils
-import com.example.farith.dailynotes.R
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
-import android.text.TextWatcher
 import android.text.Editable
-import android.content.*
-import android.util.Log
-import android.view.View
-import android.widget.*
+import android.text.TextUtils
+import android.text.TextWatcher
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProvider
+import com.example.farith.dailynotes.R
+import com.example.farith.dailynotes.databinding.ActivityNoteBinding
+import com.example.farith.dailynotes.modelClass.NoteClass
 import com.example.farith.dailynotes.receivers.Notification
+import com.example.farith.dailynotes.ui.viewModels.MainViewModel
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 
 class NoteActivity : AppCompatActivity() {
-    var noteText: EditText? = null
-    var notes: String? = null
-    var adapterPosition: String? = null
-    var previousTime: String? = null
-    var saveBtn: Button? = null
-    var finalDatabase: NoteDb? = null
-    var database: SQLiteDatabase? = null
-    var btnRemindMe: Button? = null
-    var formattedDate: String? = null
-    var notificationID: String? = null
-    var reminderTime: String? = "No reminder Added"
-    var reminderText: TextView? = null
-    var broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            val cancelNotificationId = intent.getStringExtra("cancel_noti")
-            Log.d(TAG, "onReceive: cancelling notification id is")
-            val newIntent = Intent(this@NoteActivity, Notification::class.java)
-            val pendingIntent = PendingIntent.getBroadcast(
-                applicationContext,
-                cancelNotificationId!!.toInt(),
-                newIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT
-            )
-            val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
-            alarmManager.cancel(pendingIntent)
-        }
-    }
+    private var formattedDate: String? = null
+    private var notificationID: Int? = null
+    private var reminderTime: String? = "No reminder Added"
+    private var notes: String? = null
+    private lateinit var mainViewModel: MainViewModel
+    private lateinit var activityNoteBinding: ActivityNoteBinding
+    private var createNew: Boolean = true;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_note)
-        reminderText = findViewById(R.id.reminder_text)
-        noteText = findViewById(R.id.note_text)
-        saveBtn = findViewById(R.id.save_btn)
-        btnRemindMe = findViewById(R.id.btn_remind_me)
-        finalDatabase = NoteDb(this)
-        saveBtn?.setOnClickListener(View.OnClickListener {
-            //making sure the edit text is not empty
-            if (TextUtils.isEmpty(noteText?.text.toString().trim { it <= ' ' })) {
-                Toast.makeText(this@NoteActivity, "the Note is empty", Toast.LENGTH_SHORT).show()
-                val backToMainActivity = Intent(this@NoteActivity, MainActivity::class.java)
-                backToMainActivity.flags =
-                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(backToMainActivity)
-            } else {
-                //Checking whether the intent is from adapter or add button by verifying the intent extra
-                if (!TextUtils.isEmpty(adapterPosition)) {
-                    Log.d(
-                        TAG,
-                        "onClick: save button is clicked " + noteText?.text
-                            .toString() + " " + adapterPosition
-                    )
-                    finalDatabase!!.updateDb(
-                        database,
-                        noteText?.text.toString(),
-                        previousTime,
-                        timeInMillisconds,
-                        notificationID,
-                        reminderTime
-                    )
-                    val backToMainActivity = Intent(this@NoteActivity, MainActivity::class.java)
-                    backToMainActivity.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(backToMainActivity)
+        activityNoteBinding = DataBindingUtil.setContentView(this, R.layout.activity_note)
+
+        bindData()
+        setupViewModel()
+    }
+
+    private fun setupViewModel() {
+        mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
+    }
+
+    private fun bindData() {
+        intent?.let {
+            if (!it.getBooleanExtra("ADD_BUTTON", true)) {
+                createNew = false;
+                notes = it.getStringExtra("notes")
+                reminderTime = intent.getStringExtra("reminder_time")
+                activityNoteBinding.noteText.setText(notes)
+                //This line is to take the cursor to the end of the edit text field
+                activityNoteBinding.noteText.setSelection(activityNoteBinding.noteText.text.toString().length)
+                if (TextUtils.isEmpty(reminderTime)) {
+                    activityNoteBinding.reminderText.text = "No Reminder Added"
                 } else {
-                    notificationID = createNotificationId()
-                    Log.d(TAG, "onClick: notification id created and the id is $notificationID")
-                    finalDatabase!!.insertData(
-                        database,
-                        noteText?.text.toString(),
-                        timeInMillisconds,
-                        notificationID,
-                        reminderTime
-                    )
-                    val backToMainActivity = Intent(this@NoteActivity, MainActivity::class.java)
-                    backToMainActivity.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(backToMainActivity)
+                    activityNoteBinding.reminderText.text = "Reminder is set to $reminderTime"
                 }
-            }
-        })
-        val intent = intent
-        notes = intent.getStringExtra("notes")
-        adapterPosition = intent.getStringExtra("position")
-        previousTime = intent.getStringExtra("previousTime")
-        notificationID = intent.getStringExtra("noti")
-        reminderTime = intent.getStringExtra("reminder_time")
-        Log.d(
-            TAG,
-            "onCreate:notes " + notes + "onCreate: adapterPosition " + adapterPosition + " reminder time from intent " + reminderTime
-        )
-        if (TextUtils.isEmpty(notes)) {
-        } else {
-            noteText?.setText(notes)
-            //This line is to take the cursor to the end of the edit text field
-            noteText?.setSelection(noteText?.text.toString().length)
-            if (TextUtils.isEmpty(reminderTime)) {
-                reminderText?.text = "No Reminder Added"
             } else {
-                reminderText?.text = "Reminder is set to $reminderTime"
+                createNew = true
             }
+
         }
-        btnRemindMe?.setOnClickListener(View.OnClickListener {
-            if (TextUtils.isEmpty(noteText?.text.toString().trim { it <= ' ' })) {
-                noteText?.error = "this field is required"
+
+        activityNoteBinding.saveBtn.setOnClickListener {
+
+            val value = if (createNew) {
+                val currentTime = getCurrentTime()
+                val notificationId = currentTime.hashCode()
+                notes = activityNoteBinding.noteText.text.toString().trim()
+                NoteClass(
+                    noteContent = notes, date = currentTime,
+                    notificationId = notificationId, reminderTime = "0"
+                )
+            } else {
+                NoteClass(
+                    noteContent = notes, date = formattedDate,
+                    notificationId = notificationID, reminderTime = reminderTime
+                )
+            }
+            mainViewModel.insertNotes(value)
+            finish()
+
+        }
+
+        activityNoteBinding.btnRemindMe.setOnClickListener {
+            if (TextUtils.isEmpty(
+                    activityNoteBinding.noteText.text.toString().trim()
+                )
+            ) {
+                activityNoteBinding.noteText.error = "this field is required"
             } else {
                 createDatePicker()
             }
-        })
-        noteText?.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
-                Log.d(TAG, "beforeTextChanged: ")
+        }
+        activityNoteBinding.noteText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
             }
 
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                Log.d(TAG, "onTextChanged: ")
             }
 
             override fun afterTextChanged(s: Editable) {
                 if (TextUtils.isEmpty(s)) {
-                    noteText?.hint = "Enter your note here"
+                    activityNoteBinding.noteText.hint = "Enter your note here"
                 }
             }
         })
+
     }
 
-    /*this method create notification id to send the broadcast, this id is also added in the database and
-     retrieved in the main activity while deleting the note */
-    private fun createNotificationId(): String {
-        val randomNumber = Random()
-        val uniqueRandomNumber = randomNumber.nextInt(900000)
-        return uniqueRandomNumber.toString()
+    private fun getCurrentTime(): String {
+        val date = Calendar.getInstance().time
+        return date.toString()
     }
 
-    //To get the time in milliseconds and this value is stored in the database
-    val timeInMillisconds: String
-        get() {
-            val date = Date()
-            val value = date.time
-            return value.toString()
-        }
-
-    fun createDatePicker() {
+    private fun createDatePicker() {
         val datePickerDialog = DatePickerDialog(
             this,
-            { view, year, month, dayOfMonth ->
+            { _, year, month, dayOfMonth ->
                 var month = month
-                month = month + 1
-                Log.d(TAG, "onDateSet: year $year month $month day $dayOfMonth")
+                month += 1
                 createTimePicker(year, month, dayOfMonth)
             },
             Calendar.getInstance()[Calendar.YEAR],
@@ -178,15 +133,13 @@ class NoteActivity : AppCompatActivity() {
         datePickerDialog.show()
     }
 
-    fun createTimePicker(year: Int, month: Int, dayOfMonth: Int) {
+    private fun createTimePicker(year: Int, month: Int, dayOfMonth: Int) {
         formattedDate = "$year/$month/$dayOfMonth"
         val timePickerDialog = TimePickerDialog(
             this,
             { view, hourOfDay, minute ->
-                Log.d(TAG, "onTimeSet: hour $hourOfDay minute $minute")
                 formattedDate = "$formattedDate $hourOfDay:$minute"
-                Log.d(TAG, "onTimeSet: formatted date $formattedDate")
-                sendNotification(formattedDate!!)
+                sendNotification(formattedDate ?: "")
             },
             Calendar.getInstance()[Calendar.HOUR_OF_DAY],
             Calendar.getInstance()[Calendar.MINUTE],
@@ -196,9 +149,9 @@ class NoteActivity : AppCompatActivity() {
     }
 
     //call to the notification class that extends Broadcast receiver to display the notification
-    fun sendNotification(formattedDate: String) {
+    private fun sendNotification(formattedDate: String) {
         //To make sure user has saved the note before adding reminder
-        if (TextUtils.isEmpty(notificationID)) {
+        if (notificationID != null) {
             Toast.makeText(
                 this,
                 "Kindly save the Note before adding the reminder",
@@ -208,7 +161,7 @@ class NoteActivity : AppCompatActivity() {
             if (convertTo24hrsMilliseconds(formattedDate) > System.currentTimeMillis()) {
                 val intent = Intent(this@NoteActivity, Notification::class.java)
                 if (TextUtils.isEmpty(notes)) {
-                    notes = noteText!!.text.toString().trim { it <= ' ' }
+                    notes = activityNoteBinding.noteText.text.toString().trim { it <= ' ' }
                 }
                 intent.putExtra("notes", notes)
                 intent.putExtra("position", notificationID)
@@ -222,7 +175,7 @@ class NoteActivity : AppCompatActivity() {
                 alarmManager[AlarmManager.RTC_WAKEUP, convertTo24hrsMilliseconds(formattedDate)] =
                     pendingIntent
                 reminderTime = convertToReadableDateFormat(formattedDate)
-                reminderText!!.text = "Reminder is set to $reminderTime"
+                activityNoteBinding.reminderText.text = "Reminder is set to $reminderTime"
                 Toast.makeText(
                     applicationContext,
                     "Reminder Added on " + convertToReadableDateFormat(formattedDate),
@@ -247,14 +200,13 @@ class NoteActivity : AppCompatActivity() {
         return formattedDate
     }
 
-    fun convertTo24hrsMilliseconds(formattedDate: String): Long {
+    private fun convertTo24hrsMilliseconds(formattedDate: String): Long {
         val myDate = formattedDate
         var milliseconds: Long = 1
-        val simpleDateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm")
+        val simpleDateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
         try {
-            val date = simpleDateFormat.parse(myDate)
-            milliseconds = date.time
-            Log.d(TAG, "convertToMilliseconds: $milliseconds")
+            val date: Date? = simpleDateFormat.parse(myDate)
+            milliseconds = date?.time ?: -1
         } catch (e: ParseException) {
             e.printStackTrace()
         }
@@ -265,11 +217,10 @@ class NoteActivity : AppCompatActivity() {
     private fun convertToMilliseconds(formattedDate: String): Long {
         val myDate = formattedDate
         var milliseconds: Long = 1
-        val simpleDateFormat = SimpleDateFormat("yyyy/mm/dd hh:mm")
+        val simpleDateFormat = SimpleDateFormat("yyyy/mm/dd hh:mm", Locale.getDefault())
         try {
             val date = simpleDateFormat.parse(myDate)
             milliseconds = date.time
-            Log.d(TAG, "convertToMilliseconds: $milliseconds")
         } catch (e: ParseException) {
             e.printStackTrace()
         }
@@ -277,13 +228,14 @@ class NoteActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (noteText!!.text.toString() != notes) {
+        if (activityNoteBinding.noteText.text.toString() != notes) {
             val backPressedAlertDialog = AlertDialog.Builder(this)
             backPressedAlertDialog.setTitle("Note is not Saved")
             backPressedAlertDialog.setMessage("Do you want to continue without saving, The changes made will not be reflected")
-            backPressedAlertDialog.setPositiveButton("No") { dialog, which -> }
+            backPressedAlertDialog.setPositiveButton("No") { dialog, which -> dialog.dismiss() }
             backPressedAlertDialog.setNegativeButton("Yes") { dialog, which ->
-                val backToMainActivity = Intent(this@NoteActivity, MainActivity::class.java)
+                val backToMainActivity =
+                    Intent(this@NoteActivity, MainActivity::class.java)
                 backToMainActivity.flags =
                     Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                 startActivity(backToMainActivity)
@@ -292,9 +244,5 @@ class NoteActivity : AppCompatActivity() {
         } else {
             super.onBackPressed()
         }
-    }
-
-    companion object {
-        private val TAG = NoteActivity::class.java.simpleName
     }
 }
