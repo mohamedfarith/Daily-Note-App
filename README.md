@@ -1,6 +1,6 @@
 # Daily-Note-App
 This project is designed to save short note created by the user, the app save note in database and retreive them.
-Adding screenshots of the app screen
+
 ![Screenshot_1646023594](https://user-images.githubusercontent.com/32101632/155926644-abaa1cf8-4ea6-41be-960e-8a0b9cd6bed8.png)
 ![Screenshot_1646023600](https://user-images.githubusercontent.com/32101632/155926639-b37d0ec9-b0de-4bad-98eb-f48eae71582e.png)
 ![Screenshot_1646023611](https://user-images.githubusercontent.com/32101632/155926628-7fa9d1d4-207a-4a14-8d03-f4f70b8420cb.png)
