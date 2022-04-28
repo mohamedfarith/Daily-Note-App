@@ -1,6 +1,5 @@
 package com.example.farith.dailynotes.ui.adapters
 
-import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -9,14 +8,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.farith.dailynotes.R
 import com.example.farith.dailynotes.databinding.NotesViewBinding
 import com.example.farith.dailynotes.modelClass.NoteClass
-import com.example.farith.dailynotes.ui.NoteActivity
 import com.example.farith.dailynotes.ui.adapters.NotesAdapter.MyViewHolder
+import com.example.farith.dailynotes.ui.interfaces.AdapterClickInterface
+import com.example.farith.dailynotes.ui.viewModels.MainViewModel
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
 class NotesAdapter(
-    private var noteDbList: ArrayList<NoteClass>
+    private var noteDbList: ArrayList<NoteClass>,
+    private var viewModel: MainViewModel,
+    private var adapterInterface: AdapterClickInterface
 ) : RecyclerView.Adapter<MyViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
@@ -34,6 +36,7 @@ class NotesAdapter(
         val noteValue = noteDbList[holder.bindingAdapterPosition].noteContent
         holder.binding.txtNotes.text = noteValue
         holder.binding.currentTime.text = noteDbList[position].date
+        holder.itemView.tag = noteDbList[position]
     }
 
     override fun getItemCount(): Int {
@@ -44,16 +47,8 @@ class NotesAdapter(
         RecyclerView.ViewHolder(binding.root) {
         init {
             itemView.setOnClickListener {
-                Log.d(TAG, "onClick: " + noteDbList[bindingAdapterPosition])
-                val intent = Intent(it.context, NoteActivity::class.java)
-                Log.d(TAG, "onClick: adapter postition$bindingAdapterPosition")
-                intent.putExtra("notes", noteDbList[bindingAdapterPosition].noteContent)
-                val value = (bindingAdapterPosition + 1).toString()
-                intent.putExtra("position", value)
-                intent.putExtra("previousTime", noteDbList[bindingAdapterPosition].date)
-                intent.putExtra("noti", noteDbList[bindingAdapterPosition].notificationId)
-                intent.putExtra("reminder_time", noteDbList[bindingAdapterPosition].reminderTime)
-                it.context.startActivity(intent)
+                viewModel.transferNote(it.tag as NoteClass)
+                adapterInterface.onAdapterItemClick()
             }
             itemView.setOnLongClickListener { true }
         }
@@ -78,4 +73,5 @@ class NotesAdapter(
     companion object {
         private val TAG = NotesAdapter::class.java.simpleName
     }
+
 }

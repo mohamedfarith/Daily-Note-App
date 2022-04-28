@@ -14,6 +14,7 @@ import com.example.farith.dailynotes.R
 import com.example.farith.dailynotes.databinding.ActivityMainBinding
 import com.example.farith.dailynotes.modelClass.NoteClass
 import com.example.farith.dailynotes.ui.adapters.NotesAdapter
+import com.example.farith.dailynotes.ui.interfaces.AdapterClickInterface
 import com.example.farith.dailynotes.ui.viewModels.MainViewModel
 import java.util.*
 import kotlin.collections.ArrayList
@@ -28,12 +29,18 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        bindData()
         setUpViewModel()
+        bindData()
     }
 
     private fun bindData() {
-        notesAdapter = NotesAdapter( ArrayList())
+        notesAdapter = NotesAdapter(ArrayList(), viewModel, object : AdapterClickInterface {
+            override fun onAdapterItemClick() {
+                startNoteActivity(viewModel.getTransferredNote())
+
+            }
+
+        })
         with(binding.notesRecyclerview) {
             this.layoutManager = GridLayoutManager(
                 this@MainActivity,
@@ -43,9 +50,19 @@ class MainActivity : AppCompatActivity() {
         binding.addButton.visibility = View.VISIBLE
         binding.addButton.setOnClickListener {
             val noteActivityIntent = Intent(this@MainActivity, NoteActivity::class.java)
-            noteActivityIntent.putExtra("ADD_BUTTON",true)
+            noteActivityIntent.putExtra("ADD_BUTTON", true)
             startActivity(noteActivityIntent)
         }
+    }
+
+    private fun startNoteActivity(transferredNote: NoteClass) {
+
+        val intent = Intent(this, NoteActivity::class.java).apply {
+            putExtra("ADD_BUTTON", false)
+            putExtra("NOTE_CLASS", transferredNote)
+        }
+        startActivity(intent)
+
     }
 
     private fun setUpViewModel() {

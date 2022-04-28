@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 class MainViewModel() : ViewModel() {
 
     private lateinit var noteListData: MutableLiveData<List<NoteClass>>
+    private lateinit var transferNote: NoteClass
 
     fun getNoteLiveData(): MutableLiveData<List<NoteClass>> {
         if (!::noteListData.isInitialized) {
@@ -41,6 +42,14 @@ class MainViewModel() : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             BaseRepository.updateNotes(noteData)
         }
+    }
+
+    fun transferNote(note: NoteClass) {
+        this.transferNote = note
+    }
+
+    fun getTransferredNote(): NoteClass {
+        return transferNote
     }
 
 

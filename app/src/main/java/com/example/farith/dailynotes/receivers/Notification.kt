@@ -1,28 +1,28 @@
 package com.example.farith.dailynotes.receivers
 
-import com.example.farith.dailynotes.R
-import com.example.farith.dailynotes.ui.MainActivity
-import android.app.PendingIntent
-import android.app.NotificationManager
-import android.media.RingtoneManager
 import android.app.NotificationChannel
-import android.content.*
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.media.RingtoneManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import com.example.farith.dailynotes.R
+import com.example.farith.dailynotes.ui.MainActivity
 
 class Notification : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        val notificationId = intent.getIntExtra("notificationId", -1)
         val notes = intent.getStringExtra("notes")
-        val notificationId = intent.getStringExtra("position")
         val newIntent = Intent(context, MainActivity::class.java)
-        newIntent.putExtra("notes", notes)
-        newIntent.putExtra("position", notificationId)
         newIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
         val pendingIntent = PendingIntent.getActivity(
             context,
-            notificationId!!.toInt(),
+            notificationId,
             newIntent,
             PendingIntent.FLAG_UPDATE_CURRENT
         )
@@ -59,6 +59,6 @@ class Notification : BroadcastReceiver() {
             .setLargeIcon(bitmap)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setContentIntent(pendingIntent)
-        notificationManager.notify(notificationId.toInt(), notification.build())
+        notificationManager.notify(notificationId, notification.build())
     }
 }

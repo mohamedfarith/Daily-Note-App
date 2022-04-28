@@ -2,6 +2,7 @@ package com.example.farith.dailynotes.ui
 
 import android.app.*
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextUtils
@@ -44,8 +45,10 @@ class NoteActivity : AppCompatActivity() {
         intent?.let {
             if (!it.getBooleanExtra("ADD_BUTTON", true)) {
                 createNew = false;
-                notes = it.getStringExtra("notes")
-                reminderTime = intent.getStringExtra("reminder_time")
+                val noteClass = it.getSerializableExtra("NOTE_CLASS") as NoteClass
+                notes = noteClass.noteContent
+                reminderTime = noteClass.reminderTime
+                notificationID = noteClass.notificationId
                 activityNoteBinding.noteText.setText(notes)
                 //This line is to take the cursor to the end of the edit text field
                 activityNoteBinding.noteText.setSelection(activityNoteBinding.noteText.text.toString().length)
@@ -61,19 +64,18 @@ class NoteActivity : AppCompatActivity() {
         }
 
         activityNoteBinding.saveBtn.setOnClickListener {
-
+            notes = activityNoteBinding.noteText.text.toString().trim()
+            val currentTime = getCurrentTime()
             val value = if (createNew) {
-                val currentTime = getCurrentTime()
                 val notificationId = currentTime.hashCode()
-                notes = activityNoteBinding.noteText.text.toString().trim()
                 NoteClass(
                     noteContent = notes, date = currentTime,
                     notificationId = notificationId, reminderTime = "0"
                 )
             } else {
                 NoteClass(
-                    noteContent = notes, date = formattedDate,
-                    notificationId = notificationID, reminderTime = reminderTime
+                    noteContent = notes, date = currentTime,
+                    notificationId = notificationID, reminderTime = "0"
                 )
             }
             mainViewModel.insertNotes(value)
@@ -114,7 +116,8 @@ class NoteActivity : AppCompatActivity() {
 
     private fun getCurrentTime(): String {
         val date = Calendar.getInstance().time
-        return date.toString()
+        val dateFormat = SimpleDateFormat("EEE, d MMM yyyy, h:mm a")
+        return dateFormat.format(date).toString()
     }
 
     private fun createDatePicker() {
@@ -151,7 +154,7 @@ class NoteActivity : AppCompatActivity() {
     //call to the notification class that extends Broadcast receiver to display the notification
     private fun sendNotification(formattedDate: String) {
         //To make sure user has saved the note before adding reminder
-        if (notificationID != null) {
+        if (notificationID == null) {
             Toast.makeText(
                 this,
                 "Kindly save the Note before adding the reminder",
@@ -163,14 +166,25 @@ class NoteActivity : AppCompatActivity() {
                 if (TextUtils.isEmpty(notes)) {
                     notes = activityNoteBinding.noteText.text.toString().trim { it <= ' ' }
                 }
+                intent.putExtra("notificationId", notificationID)
                 intent.putExtra("notes", notes)
-                intent.putExtra("position", notificationID)
-                val pendingIntent = PendingIntent.getBroadcast(
-                    applicationContext,
-                    notificationID!!.toInt(),
-                    intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                )
+                val pendingIntent: PendingIntent =
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        PendingIntent.getBroadcast(
+                            applicationContext,
+                            notificationID!!.toInt(),
+                            intent,
+                            PendingIntent.FLAG_IMMUTABLE
+                        )
+                    } else {
+                        PendingIntent.getBroadcast(
+                            applicationContext,
+                            notificationID!!.toInt(),
+                            intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                        )
+                    }
+
                 val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
                 alarmManager[AlarmManager.RTC_WAKEUP, convertTo24hrsMilliseconds(formattedDate)] =
                     pendingIntent
