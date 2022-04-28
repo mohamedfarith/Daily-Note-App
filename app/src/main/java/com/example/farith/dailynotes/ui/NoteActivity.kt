@@ -65,6 +65,10 @@ class NoteActivity : AppCompatActivity() {
 
         activityNoteBinding.saveBtn.setOnClickListener {
             notes = activityNoteBinding.noteText.text.toString().trim()
+            if (TextUtils.isEmpty(notes)) {
+                Toast.makeText(it.context, "Please enter some note.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener;
+            }
             val currentTime = getCurrentTime()
             val value = if (createNew) {
                 val notificationId = currentTime.hashCode()
